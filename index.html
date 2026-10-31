@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="theme-color" content="#14204a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="description" content="昼間でもスマホを空にかざすと、その方向に今ある星や星座が見えるウェブアプリ">
+  <title>そらかざし</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon-180.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- 観測画面 -->
+  <main id="view" aria-label="星空ビュー">
+    <video id="camera" playsinline muted autoplay></video>
+    <canvas id="sky"></canvas>
+
+    <div id="reticle" aria-hidden="true"></div>
+    <div id="target" aria-live="polite"></div>
+
+    <header id="hud">
+      <div id="heading">
+        <span id="dir-name">—</span>
+        <span id="dir-detail"></span>
+      </div>
+      <button id="time-chip" class="chip" type="button" aria-label="表示する時刻を変える"></button>
+    </header>
+
+    <div id="sun-warning" role="alert" hidden>太陽の方向です。画面越しでも太陽を直接見ないでください。</div>
+    <div id="toast" role="status" hidden></div>
+
+    <nav id="toolbar" aria-label="表示の切り替え">
+      <button type="button" data-toggle="camera" aria-pressed="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>
+        <span>カメラ</span>
+      </button>
+      <button type="button" data-toggle="lines" aria-pressed="true">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 18l5-7 5 3 6-9"/><circle cx="4" cy="18" r="1.6"/><circle cx="9" cy="11" r="1.6"/><circle cx="14" cy="14" r="1.6"/><circle cx="20" cy="5" r="1.6"/></svg>
+        <span>星座線</span>
+      </button>
+      <button type="button" data-toggle="names" aria-pressed="true">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 6h14M12 6v13M8 19h8"/></svg>
+        <span>名前</span>
+      </button>
+      <button type="button" data-sheet="time-sheet">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 7v5l3 2"/></svg>
+        <span>時刻</span>
+      </button>
+      <button type="button" data-sheet="settings-sheet">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M5 12h14M5 17h14"/><circle cx="9" cy="7" r="1.8"/><circle cx="15" cy="12" r="1.8"/><circle cx="8" cy="17" r="1.8"/></svg>
+        <span>設定</span>
+      </button>
+    </nav>
+
+    <!-- 天体の詳細 -->
+    <section id="info" class="sheet" hidden aria-labelledby="info-name">
+      <button type="button" class="sheet-close" aria-label="閉じる">×</button>
+      <h2 id="info-name"></h2>
+      <p id="info-sub"></p>
+      <dl id="info-data"></dl>
+    </section>
+
+    <!-- 時刻 -->
+    <section id="time-sheet" class="sheet" hidden aria-labelledby="time-title">
+      <button type="button" class="sheet-close" aria-label="閉じる">×</button>
+      <h2 id="time-title">表示する時刻</h2>
+      <p class="hint">昼間でも、今この瞬間に空にある星を表示しています。夜にどう見えるか知りたいときは時刻を進めてください。</p>
+      <output id="time-label" for="time-offset"></output>
+      <input id="time-offset" type="range" min="-720" max="720" step="10" value="0" aria-label="現在からのずれ（分）">
+      <div class="row">
+        <button type="button" id="time-now" class="pill">今に戻す</button>
+        <button type="button" id="time-tonight" class="pill">今夜 21時</button>
+        <button type="button" id="time-dawn" class="pill">明け方 4時</button>
+      </div>
+    </section>
+
+    <!-- 設定 -->
+    <section id="settings-sheet" class="sheet" hidden aria-labelledby="settings-title">
+      <button type="button" class="sheet-close" aria-label="閉じる">×</button>
+      <h2 id="settings-title">設定</h2>
+      <label class="switch"><input type="checkbox" id="opt-grid"> 方位・高度の目盛りを表示</label>
+      <div class="field">
+        <label for="heading-offset">方位のずれを補正 <output id="heading-offset-label">0°</output></label>
+        <input id="heading-offset" type="range" min="-45" max="45" step="1" value="0">
+        <p class="hint">コンパスは磁石や金属の影響でずれます。太陽や月の位置が実際とずれているときに合わせてください。画面を左右になぞっても補正できます。</p>
+      </div>
+      <div class="field">
+        <span class="label">観測地</span>
+        <p id="location-label"></p>
+        <div class="row">
+          <button type="button" id="relocate" class="pill">現在地を取得し直す</button>
+        </div>
+        <div class="row coords">
+          <label>緯度 <input id="lat-input" type="number" step="0.01" min="-90" max="90" inputmode="decimal"></label>
+          <label>経度 <input id="lon-input" type="number" step="0.01" min="-180" max="180" inputmode="decimal"></label>
+          <button type="button" id="apply-coords" class="pill">この場所にする</button>
+        </div>
+      </div>
+      <div class="field">
+        <span class="label">見え方</span>
+        <div class="row">
+          <button type="button" id="mode-sensor" class="pill">空にかざす</button>
+          <button type="button" id="mode-manual" class="pill">指でなぞる</button>
+        </div>
+      </div>
+      <p class="credit">星表・星座線: <a href="https://github.com/ofrohn/d3-celestial" target="_blank" rel="noopener">d3-celestial</a>（Yale Bright Star Catalog ほか）</p>
+    </section>
+  </main>
+
+  <!-- はじめの画面 -->
+  <section id="start" aria-labelledby="app-title">
+    <div class="start-inner">
+      <h1 id="app-title">そらかざし</h1>
+      <p class="lead">昼の空にも、星はちゃんとあります。<br>スマホをかざして、今その方向にある星と星座を見てみましょう。</p>
+      <figure class="planisphere">
+        <canvas id="allsky" width="320" height="320" aria-label="今の全天の星空"></canvas>
+        <figcaption id="allsky-caption">現在地の空を計算しています…</figcaption>
+      </figure>
+      <div class="start-actions">
+        <button type="button" id="start-sensor" class="primary">空にかざして見る</button>
+        <button type="button" id="start-manual" class="secondary">指でなぞって見る</button>
+      </div>
+      <p class="fine">位置情報・端末の向き・カメラ（任意）を使います。データは端末の外へ送信しません。</p>
+    </div>
+  </section>
+
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>

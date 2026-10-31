@@ -108,3 +108,14 @@ test('16方位', () => {
   assert.equal(directionName(90), '東');
   assert.equal(directionName(202.5), '南南西');
 });
+
+test('東京の月 2026-10-31: 11:29 に西北西へ沈む（月齢約20.5）', async () => {
+  const { solarSystemBodies } = await import('../src/astro.js');
+  const f = observerFrame(new Date('2026-10-31T11:29:00+09:00'), 35.6938, 139.7034);
+  const moon = solarSystemBodies(f).find((b) => b.id === 'moon');
+  // 月の入り = 上辺が地平線（大気差込み）→ 中心の幾何高度 ≈ -0.83°
+  near(moon.alt, -0.83, 0.3, '月の入りの高度');
+  assert.equal(directionName(moon.az), '西北西');
+  near(moon.ageDays, 20.5, 1.0, '月齢');
+  assert.equal(moon.waxing, false);
+});

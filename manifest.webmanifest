@@ -1,0 +1,17 @@
+{
+  "name": "そらかざし",
+  "short_name": "そらかざし",
+  "description": "昼間でもスマホを空にかざすと、その方向にある星と星座が見えるアプリ",
+  "lang": "ja",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "any",
+  "background_color": "#0c1433",
+  "theme_color": "#14204a",
+  "icons": [
+    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml" },
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
