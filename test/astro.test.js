@@ -1,5 +1,5 @@
-// node --test で実行。数値は Meeus『Astronomical Algorithms』(第2版) の例題より
-import test from 'node:test';
+// npm test（Vitest）で実行。数値は Meeus『Astronomical Algorithms』(第2版) の例題より
+import { test } from 'vitest';
 import assert from 'node:assert/strict';
 import {
   julianDate, gmstDeg, precessionMatrix, raDecToVec, vecToRaDec, matVec,

@@ -8,9 +8,9 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="description" content="昼間でもスマホを空にかざすと、その方向に今ある星や星座が見えるウェブアプリ">
   <title>そらかざし</title>
-  <link rel="manifest" href="manifest.webmanifest">
-  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
-  <link rel="apple-touch-icon" href="icons/icon-180.png">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icons/icon-180.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
@@ -110,6 +110,11 @@
           <button type="button" id="mode-manual" class="pill">指でなぞる</button>
         </div>
       </div>
+      <section id="version-panel" class="field version" aria-live="polite">
+        <div><span class="label">バージョン</span> <strong class="version-id"></strong><span class="version-built"></span></div>
+        <p class="version-status"></p>
+        <button type="button" class="pill">最新版を確認</button>
+      </section>
       <p class="credit">星表・星座線: <a href="https://github.com/ofrohn/d3-celestial" target="_blank" rel="noopener">d3-celestial</a>（Yale Bright Star Catalog ほか）</p>
     </section>
   </main>

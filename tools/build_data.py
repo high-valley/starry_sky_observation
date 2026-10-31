@@ -7,9 +7,9 @@ Usage:
     python3 tools/build_data.py d3-celestial/data
 
 Outputs (all RA/Dec are J2000, degrees, RA in 0..360):
-    data/stars.json          [[ra, dec, mag, bv], ...] sorted by magnitude
-    data/constellations.json [{id, ja, en, ra, dec, lines: [[[ra,dec],...], ...]}, ...]
-    data/starnames.json      [{ra, dec, mag, ja, en, con}, ...]  named bright stars
+    public/data/stars.json          [[ra, dec, mag, bv], ...] sorted by magnitude
+    public/data/constellations.json [{id, ja, en, ra, dec, lines: [[[ra,dec],...], ...]}, ...]
+    public/data/starnames.json      [{ra, dec, mag, ja, en, con}, ...]  named bright stars
 """
 import json
 import os
@@ -24,7 +24,7 @@ def ra360(lon):
 
 
 def main(src):
-    out_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data')
+    out_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'public', 'data')
 
     stars_src = json.load(open(os.path.join(src, 'stars.6.json'), encoding='utf-8'))
     names_src = json.load(open(os.path.join(src, 'starnames.json'), encoding='utf-8'))

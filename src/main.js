@@ -2,6 +2,7 @@ import { observerFrame, solarSystemBodies, matVec, enuToAzAlt, directionName, do
 import { loadCatalog } from './catalog.js';
 import { SkyRenderer, drawAllSky } from './renderer.js';
 import { OrientationTracker, basisFromAzAlt } from './orientation.js';
+import { watchUpdates } from './update.js';
 
 const DEFAULT_LOC = { lat: 35.6812, lon: 139.7671, label: '東京駅付近（仮の位置）' };
 const STORE_KEY = 'sorakazashi:v1';
@@ -47,8 +48,8 @@ const now = () => new Date(Date.now() + state.timeOffsetMin * 60000);
 const fmtTime = new Intl.DateTimeFormat('ja-JP', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 
 function offsetText(min) {
-  if (min === 0) return '今';
-  const a = Math.abs(min), h = Math.floor(a / 60), m = a % 60;
+  if (Math.round(min) === 0) return '今';
+  const a = Math.round(Math.abs(min)), h = Math.floor(a / 60), m = a % 60;
   const span = (h ? `${h}時間` : '') + (m ? `${m}分` : '');
   return min > 0 ? `${span}後` : `${span}前`;
 }
@@ -67,7 +68,7 @@ function setOffsetTo(hour) {
   const d = new Date();
   const target = new Date(d);
   target.setHours(hour, 0, 0, 0);
-  let diff = Math.round((target - d) / 60000);
+  let diff = (target - d) / 60000; // 秒まで合わせ、ちょうどその時刻にする
   if (diff < -720) diff += 1440;
   if (diff > 720) diff -= 1440;
   state.timeOffsetMin = diff;
@@ -515,6 +516,7 @@ async function init() {
   updateTimeUI();
   bindUI();
   bindPointer();
+  watchUpdates();
   try {
     catalog = await loadCatalog();
   } catch (e) {
