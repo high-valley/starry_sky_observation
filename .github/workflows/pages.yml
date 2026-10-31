@@ -1,4 +1,4 @@
-name: Test and deploy
+name: Deploy to GitHub Pages
 
 on:
   push:
@@ -12,33 +12,41 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages
+  group: pages-${{ github.event_name == 'pull_request' && github.head_ref || 'main' }}
   cancel-in-progress: true
 
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      # package-lock.json はまだ無いので npm install（lock を入れたら npm ci と cache: npm に戻す）
+      - run: npm install --no-audit --no-fund
       - run: npm test
+      - run: npm run build
+      - name: 公開する中身の確認（ブラウザで開いて星空が描けるか）
+        run: |
+          npx playwright install --with-deps chromium
+          npm run preview > preview.log 2>&1 &
+          npx --yes wait-on -t 30000 http://127.0.0.1:4173/
+          npm run test:e2e
+      - if: github.event_name != 'pull_request'
+        uses: actions/configure-pages@v5
+      - if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
 
   deploy:
     if: github.event_name != 'pull_request'
-    needs: test
+    needs: build
     runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v4
-      - name: Collect site files
-        run: |
-          mkdir _site
-          cp -r index.html manifest.webmanifest css src data icons _site/
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
       - id: deployment
         uses: actions/deploy-pages@v4

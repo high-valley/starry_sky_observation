@@ -331,4 +331,33 @@ input[type="range"] { width: 100%; accent-color: var(--accent); margin: 10px 0 4
 .secondary { background: none; border: 1px solid var(--panel-edge); color: var(--ink); font-weight: 500; }
 .fine { margin-top: 16px; font-size: 12px; color: var(--ink-soft); }
 
+/* ---------------------------------------------------------------- バージョン */
+
+.version { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; align-items: center; }
+.version .version-id { font-variant-numeric: tabular-nums; }
+.version .version-built { font-size: 13px; color: var(--ink-soft); }
+.version .version-status { grid-column: 1; margin: 0; font-size: 13px; color: var(--ink-soft); }
+.version button { grid-column: 2; grid-row: 1 / span 2; }
+.version.has-update .version-status { color: var(--accent); font-weight: 700; }
+
+#update-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: calc(var(--safe-top) + 8px) 12px 8px 16px;
+  background: var(--night-deep);
+  border-bottom: 2px solid var(--accent);
+  font-size: 14px;
+  font-weight: 700;
+}
+#update-banner span { flex: 1; min-width: 0; }
+#update-banner .pill { padding: 6px 14px; white-space: nowrap; }
+.primary-pill { background: var(--accent); color: #1a1530; border-color: var(--accent); }
+body.has-update-banner #hud { top: calc(var(--safe-top) + 64px); }
+
 [hidden] { display: none !important; }

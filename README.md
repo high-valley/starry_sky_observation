@@ -10,16 +10,18 @@
 - 星や星座をタップすると方位・高度・明るさなどを表示
 - 太陽の方向を向くと注意を表示
 
-## 使い方
+## 開発
 
-位置情報・センサー・カメラは **HTTPS（または localhost）** でないと使えません。
-
-```bash
-npm start          # http://localhost:8080 で配信（python3 の簡易サーバー）
-npm test           # 天文計算のテスト
+```
+npm install
+npm run dev            # http://127.0.0.1:5173/
+npm test               # 天文計算・更新確認の単体テスト（Vitest）
+npm run build          # dist/ に公開用の画面を作る（version.json も出る）
+npm run preview        # dist/ を http://127.0.0.1:4173/ で配信
+npm run test:e2e       # 画面の通しテスト（preview 起動中に実行。playwright が必要）
 ```
 
-スマホで試すときは GitHub Pages（下記）で公開した URL を開くのが手軽です。
+位置情報・センサー・カメラは **HTTPS（または localhost）** でないと使えません。スマホで試すときは公開した URL を開きます。
 
 - iPhone（Safari）: 「空にかざして見る」を押すと「動作と方向」へのアクセス許可を求められます。
 - Android（Chrome）: `deviceorientationabsolute` で北基準の方位を取得します。
@@ -30,13 +32,16 @@ npm test           # 天文計算のテスト
 | パス | 内容 |
 | --- | --- |
 | `index.html`, `css/` | 画面 |
+| `public/` | そのまま配信するもの（星データ・アイコン・manifest） |
 | `src/astro.js` | 天文計算（恒星時・歳差・地平座標、太陽・月・惑星）。依存なし |
 | `src/orientation.js` | 端末の向き → 視線方向（クォータニオン、iOS/Android の差異吸収） |
 | `src/renderer.js` | Canvas 描画（心射図法。地平線・星座線が直線になる） |
 | `src/catalog.js` | 星データの読み込み |
 | `src/main.js` | 画面の状態管理と操作 |
-| `data/` | 星表・星座線・星名（`tools/build_data.py` で生成） |
-| `test/` | Meeus の例題・国立天文台の暦との比較テスト |
+| `public/data/` | 星表・星座線・星名（`tools/build_data.py` で生成） |
+| `src/version.js`, `src/update.js` | 最新版の確認と更新の帯 |
+| `test/` | Meeus の例題・国立天文台の暦との比較テスト、更新確認のテスト |
+| `tests-e2e/` | 画面の通しテスト（Playwright） |
 
 ### 計算精度
 
@@ -59,8 +64,12 @@ python3 tools/build_data.py d3-celestial/data
 
 ## 公開（GitHub Pages）
 
-`main` に push すると GitHub Actions がテストを実行し、Pages にデプロイします。
-初回のみ、リポジトリの **Settings → Pages → Build and deployment → Source** を **GitHub Actions** にしてください。
+`main` への push で `.github/workflows/pages.yml` がテスト・ビルド・画面の通しテストを行い、自動デプロイする。PR ではデプロイせず、テストと通しテストだけ走る。
+
+1. Settings → Pages → Source を **GitHub Actions** にする（初回のみ）
+2. 公開先: https://high-valley.github.io/starry_sky_observation/
+
+画面は数分ごとに `version.json` を見て、新しいバージョンがあれば上に「更新する」の帯を出す。設定画面の下にもバージョンと「最新版を確認」がある。
 
 ## 今後の候補
 
